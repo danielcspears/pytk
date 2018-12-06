@@ -83,6 +83,7 @@ class MyFrame(Frame):
                 self.df = pd.read_excel(fname, skiprows = 4)
             except:                     # <- naked except is a bad idea
                 showerror("Open Source File", "Failed to read file\n'%s'" % fname)
+            self.buttonw.config(state=DISABLED)
             return self.df
 
 
@@ -95,6 +96,7 @@ class MyFrame(Frame):
                 self.data = pd.read_excel(fname, skiprows = 4)
             except:                     # <- naked except is a bad idea
                 showerror("Open Source File", "Failed to read file\n'%s'" % fname)
+            self.buttonr.config(state=DISABLED)
             return self.data
 
 
@@ -107,6 +109,7 @@ class MyFrame(Frame):
                 self.df1 = pd.read_excel(fname, skiprows = 6)
             except:                     # <- naked except is a bad idea
                 showerror("Open Source File", "Failed to read file\n'%s'" % fname)
+            self.buttonb.config(state=DISABLED)
             return self.df1
 
     def calc_wioa(self):
@@ -121,6 +124,7 @@ class MyFrame(Frame):
         self.df = self.df[~self.df['Service'].astype(str).str.startswith('L')]
         self.df = self.df[["Staff Created", "Create Date", "Group", "Num of Activities",'Region / LWIA']]
         self.dfd = self.df.groupby(['Region / LWIA',"Staff Created","Create Date","Group"]).count()
+        self.buttonwp.config(state=DISABLED)
         return self.dfd
 
     def calc_resea(self):    
@@ -145,6 +149,7 @@ class MyFrame(Frame):
 
         self.data['Hours to Charge'] = (self.data['Minutes']/60).apply(roundx)
         self.data = self.data.loc[self.data['Minutes']!= 0].sort_values(by=["Staff Edited","Actual Date"])
+        self.buttonrp.config(state=DISABLED)
         return self.data
 
     def calc_business(self):
@@ -159,22 +164,25 @@ class MyFrame(Frame):
         self.df1["Num of Activities"] = self.df1['Service Code']
         self.df1 = self.df1[['Staff Reported',"Actual Date",'Service Code','Num of Activities']]
         self.df1c = self.df1.groupby(['Staff Reported','Actual Date','Service Code',]).count()
+        self.buttonbp.config(state=DISABLED)
         return self.df1c
 
     def save_wfile(self):
         file_wpath = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"),("Excel files", "*.xls"),("All files", "*.*")))
         if file_wpath:
-            print(self.dfd)
+            self.button4.config(state=DISABLED)
             self.dfd.to_excel(file_wpath)
 
     def save_rfile(self):
         file_path = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"),("Excel files", "*.xls"),("All files", "*.*")))
         if file_path:
+            self.button5.config(state=DISABLED)
             self.data.to_excel(file_path)
 
     def save_bfile(self):
         file_path = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"),("Excel files", "*.xls"),("All files", "*.*")))
         if file_path:
+            self.button6.config(state=DISABLED)
             self.df1c.to_excel(file_path)
 
 
