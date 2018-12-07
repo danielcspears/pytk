@@ -1,18 +1,4 @@
-# from tkinter import *
-# from tkinter import ttk
-# from tkinter import filedialog
-
-# interface = Tk()
-
-# def openfile():
-#     return filedialog.askopenfilename()
-
-# button = ttk.Button(interface, text="Open", command=openfile)  # <------
-# button.grid(column=1, row=1)
-
-# interface.mainloop()
-
-
+# danielcspears - open, process, and save 
 from tkinter import *
 from tkinter import ttk  
 from tkinter.filedialog import asksaveasfilename
@@ -26,20 +12,16 @@ class MyFrame(Frame):
     def __init__(self):
         Frame.__init__(self)
         self.master.title("Processing App")
-        self.master.rowconfigure(12, weight=1)
-        self.master.columnconfigure(12, weight=1)
+        self.master.rowconfigure(14, weight=1)
+        self.master.columnconfigure(14, weight=1)
         self.grid(sticky=W+E+N+S)
         self.grid_rowconfigure(1, minsize=5)
         self.grid_rowconfigure(4, minsize=10) 
         self.grid_rowconfigure(7, minsize=10)
+        self.grid_rowconfigure(10, minsize=10)
+        self.grid_rowconfigure(13, minsize=10)
+        self.grid_columnconfigure(14, minsize=5)
 
-
-        self.buttonw = Button(self, text="Open File", command=self.load_wfile, width=10, fg="blue")
-        self.buttonw.grid(row=3, column=3, sticky=W)
-        self.buttonr = Button(self, text="Open File", command=self.load_rfile, width=10, fg="blue")
-        self.buttonr.grid(row=6, column=3, sticky=W)
-        self.buttonb = Button(self, text="Open File", command=self.load_bfile, width=10, fg="blue")
-        self.buttonb.grid(row=9, column=3, sticky=W)
 
         self.label = Label(self, text = "WIOA", width = 10)
         self.label.grid(row=3, column = 0, sticky = E)
@@ -47,6 +29,17 @@ class MyFrame(Frame):
         self.label1.grid(row=6, column = 0, sticky = E)
         self.label2 = Label(self, text = "Business", width = 10)
         self.label2.grid(row=9, column = 0, sticky = E)
+        self.label3 = Label(self, text = "Wag Pey", width = 10)
+        self.label3.grid(row=11, column = 0, sticky = E)
+
+        self.buttonw = Button(self, text="Open File", command=self.load_wfile, width=10, fg="blue")
+        self.buttonw.grid(row=3, column=3, sticky=W)
+        self.buttonr = Button(self, text="Open File", command=self.load_rfile, width=10, fg="blue")
+        self.buttonr.grid(row=6, column=3, sticky=W)
+        self.buttonb = Button(self, text="Open File", command=self.load_bfile, width=10, fg="blue")
+        self.buttonb.grid(row=9, column=3, sticky=W)
+        self.buttonwpl = Button(self, text="Open File", command=self.load_wpfile, width=10, fg="blue")
+        self.buttonwpl.grid(row=11, column=3, sticky=W)
 
         self.buttonwp = Button(self, text = "Process", command = self.calc_wioa, width = 10)
         self.buttonwp.grid(row=3, column=5, sticky=W)
@@ -54,6 +47,8 @@ class MyFrame(Frame):
         self.buttonrp.grid(row=6, column=5, sticky=W)
         self.buttonbp = Button(self, text = "Process", command = self.calc_business, width = 10)
         self.buttonbp.grid(row=9, column=5, sticky=W)
+        self.buttonwpb = Button(self, text = "Process", command = self.calc_wp, width = 10)
+        self.buttonwpb.grid(row=11, column=5, sticky=W)
 
         self.button4 = Button(self, text = "Save", command = self.save_wfile, width = 10, fg = 'red')
         self.button4.grid(row=3, column=7, sticky=W)
@@ -61,6 +56,8 @@ class MyFrame(Frame):
         self.button5.grid(row=6, column=7, sticky=W)
         self.button6 = Button(self, text = "Save", command = self.save_bfile, width = 10, fg = 'red')
         self.button6.grid(row=9, column=7, sticky=W)
+        self.button7 = Button(self, text = "Save", command = self.save_wpfile, width = 10, fg = 'red')
+        self.button7.grid(row=11, column=7, sticky=W)
 
         # self.sep = ttk.Separator(self, orient=HORIZONTAL)
         # self.sep.grid(row = 4, column=2, columnspan=12, sticky=(E,W))
@@ -71,8 +68,8 @@ class MyFrame(Frame):
         self.dfd = None
         self.df1c = None
         self.df1 = None
-
-
+        self.df2 = None
+        self.df2g = None
 
     def load_wfile(self):
         fname = askopenfilename(filetypes=(("Excel files", "*.xlsx"),("Excel files", "*.xls"),("All files", "*.*")))
@@ -111,6 +108,18 @@ class MyFrame(Frame):
                 showerror("Open Source File", "Failed to read file\n'%s'" % fname)
             self.buttonb.config(state=DISABLED)
             return self.df1
+
+    def load_wpfile(self):
+        fname = askopenfilename(filetypes=(("Excel files", "*.xlsx"),("Excel files", "*.xls"),("All files", "*.*")))
+        if fname:
+            try:
+                print("""here it comes: self.settings["template"].set(fname)""")
+                # print(fname)
+                self.df2 = pd.read_excel(fname, skiprows = 4)
+            except:                     # <- naked except is a bad idea
+                showerror("Open Source File", "Failed to read file\n'%s'" % fname)
+            self.buttonwpl.config(state=DISABLED)
+            return self.df2
 
     def calc_wioa(self):
         self.df = self.df[:-3]
@@ -167,6 +176,38 @@ class MyFrame(Frame):
         self.buttonbp.config(state=DISABLED)
         return self.df1c
 
+    def calc_wp(self):
+        disallowed = ['021 - Late Compliance of RESEA SP2', \
+        'A00 - WIOP Attendance (ABAWD)', 'A20 - Adult/DW WIOP (ABAWD)', \
+        '038 - Late Compliance of Initial RESEA',  'A10 - Youth WIOP (ABAWD)', \
+        '037 - Continued UI Re-Employment Workshop/Orientation', 'A22 - Adult/DW WIOP (ABAWD) Re-referral', 
+        'A12 - Youth WIOP (ABAWD) Re-referral', '022 - Late Compliance of RESEA SP3',\
+        '121 - REA/RESEA Subsequent Call In (WP)','138 - Single Visit Completion of Initial RESEA', '650 - Enrolled in STEP Job Readiness Program']
+
+        self.df2 = self.df2[:-3]
+        self.df2 = self.df2.drop(self.df2.columns[0], axis=1)
+        self.df2['Actual Date'] = pd.to_datetime(self.df2['Actual Date']).dt.date
+        self.df2['Group'] = self.df2["Service"].str[0]
+        self.df2 = self.df2.drop_duplicates(["State ID","Group", "Actual Date"])
+        self.df2 = self.df2[~((self.df2[['State ID','Actual Date']].duplicated(keep=False)) & (self.df2['Service'].isin(disallowed).any()))]
+        self.df2 = self.df2[self.df2["Service"]!= '133 - Self-Directed Job Search through VOS (WP)']
+        self.df2 = self.df2[~self.df2['Service'].astype(str).str.startswith('A')]
+        self.df2 = self.df2[~self.df2['Service'].astype(str).str.startswith('0')]
+        self.df2 = self.df2[~self.df2['Service'].astype(str).str.startswith('L')]
+        self.df2 = self.df2[~self.df2['Service'].astype(str).str.startswith('F')]
+        self.df2 = self.df2[~self.df2['Service'].astype(str).str.startswith('E')]
+        self.df2 = self.df2[~self.df2['Service'].astype(str).str.startswith('6')]
+        self.df2 = self.df2[~self.df2['Service'].astype(str).str.startswith('5')]
+        self.df2 = self.df2[~self.df2['Service'].astype(str).str.startswith('7')]
+        self.df2 = self.df2[['UserName', 'State ID','Region / LWIA', 'Service', 'Group','Completion Status', 'Staff Created', 'Actual Date']]
+        self.df2 = self.df2[self.df2['Completion Status'] == "Successful Completion"]
+        self.df2 = self.df2[self.df2['Staff Created'] != "Process, GUS Batch "]
+        self.df2["Num of Activities"] = self.df2['Service']
+        self.df2 = self.df2[['Region / LWIA',"Staff Created", "Actual Date", "Service","Num of Activities"]]
+        self.df2g = self.df2.groupby(['Region / LWIA','Staff Created','Actual Date','Service',]).count()
+        self.buttonwpb.config(state=DISABLED)
+        return self.df2g
+
     def save_wfile(self):
         file_wpath = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"),("Excel files", "*.xls"),("All files", "*.*")))
         if file_wpath:
@@ -184,6 +225,12 @@ class MyFrame(Frame):
         if file_path:
             self.button6.config(state=DISABLED)
             self.df1c.to_excel(file_path)
+
+    def save_wpfile(self):
+        file_path = asksaveasfilename(filetypes=(("Excel files", "*.xlsx"),("Excel files", "*.xls"),("All files", "*.*")))
+        if file_path:
+            self.button7.config(state=DISABLED)
+            self.df2g.to_excel(file_path)
 
 
 if __name__ == "__main__":
